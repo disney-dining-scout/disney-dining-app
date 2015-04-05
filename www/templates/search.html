@@ -1,0 +1,39 @@
+<ion-view view-title="{{data.title}}">
+  <ion-content>
+    <form novalidate name="searchForm">
+    <div class="list">
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Restaurant</span>
+        <ion-autocomplete placeholder="Enter the restaurant to search for ..." items-method="search(query)" item-value-key="id" item-view-value-key="name" ng-model="data.selected" required />
+        <div class="error-container" ng-show="data.error">
+          <small class="assertive">You must select a restaurant</small>
+        </div>
+      </label>
+      <div class="list"  ng-if="data.restaurants">
+        <li class="item" ng-repeat="restaurant in data.restaurants">{{restaurant.name}}</li>
+      </div>
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Date</span>
+        <input type="text" placeholder="Sunday, January 25 2015" ng-click="showDatePicker()" ng-model="data.day">
+      </label>
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Time</span>
+        <ionic-time-picker etime="data.epochTime" format="12" step="5" date-format="{format: 'h:mm A'}">
+            <input type="text" placeholder="Sunday, January 25 2015" ng-model="data.epochTime" disabled>
+        </ionic-time-picker>
+      </label>
+      <label class="item item-input item-stacked-label">
+        <span class="input-label">Number of Guests</span>
+        <h-number value="data.partySize" min="1" max="50" step="1"></h-number>
+      </label>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button class="button button-block button-positive" ng-click="onSubmit()">
+          {{data.buttonName}} Search
+        </button>
+      </div>
+    </div>
+    </form>
+  </ion-content>
+</ion-view>

@@ -1,0 +1,30 @@
+{
+  "name": "Ionic Autocomplete Directive",
+  "authors": [
+    "Ala RIHANE <rihane.alaa@gmail.com>"
+  ],
+  "description": "AngularJS directive for text input autocomplete for Ionic Framework",
+  "main": [
+    "www/lib/autocomplete/autocomplete.directive.js"
+  ],
+  "keywords": [
+    "ionic",
+    "autocomplete",
+    "text",
+    "input",
+    "mobile",
+    "html5"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/sn0opr/ionic-autocomplete",
+  "private": false,
+  "_release": "ef8ea501f5",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "ef8ea501f5a798e382decbbe31bff2d774288335"
+  },
+  "_source": "https://github.com/sn0opr/ionic-autocomplete.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/sn0opr/ionic-autocomplete.git"
+}

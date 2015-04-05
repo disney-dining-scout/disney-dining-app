@@ -1,0 +1,61 @@
+/* Empty. Add your own CSS if you like */
+
+.logo{
+  background-image: url('../img/dining-scout-logo.png');
+  background-repeat: no-repeat;
+  width: 185px;
+  height: 185px;
+  margin: 10% auto 25px auto;
+  position: relative;
+  z-index:2;
+}
+
+.angular-number-picker label {
+  padding: 0px 12px;
+  font-size: 2em;
+}
+
+.angular-number-picker button {
+  padding: 5px 12px !important;
+}
+
+.pikaday-container {
+  width: 100%;
+  float: left;
+}
+.item .range input {
+  padding-right: 0px !important;
+}
+
+.platform-android .popover {
+  top: 25% !important;
+}
+
+.button-float{
+  background: #ef473a !important;
+  color:white !important;
+  z-index: 12 !important;
+  position: absolute !important;
+  bottom: 15px !important;
+  right: 15px !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transition: 0.2s linear !important;
+  transition: 0.2s linear !important;
+  -webkit-transition-property: -webkit-transform, all !important;
+  transition-property: transform, all !important;
+
+}
+
+.button-float:hover{
+  -webkit-transform: translate3d(0, -1px, 0)  !important;
+  transform: translate3d(0, -1px, 0) !important;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4) !important;
+  background: darken(#ef473a, 10%) !important;
+}
+
+.item-options {
+ width: 75px; 
+}

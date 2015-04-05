@@ -1,0 +1,120 @@
+<ion-view view-title="Settings">
+  <ion-tabs class="tabs-striped tabs-top tabs-background-positive tabs-color-light" has-header="true">
+    <ion-tab title="User" icon-on="ion-person" icon-off="ion-person" >
+      <ion-view>
+        <ion-content padding="true">
+          <div class="list">
+            <div class="item item-divider">
+              User Profile
+            </div>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">First Name</span>
+              <input type="text" placeholder="John" ng-model="data.user.firstName">
+            </label>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">Last Name</span>
+              <input type="text" placeholder="Smith" ng-model="data.user.lastName">
+            </label>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">Zip Code</span>
+              <input type="text" placeholder="77777" ng-model="data.user.zipCode">
+            </label>
+          </div>
+          <div class="row">
+            <div class="col">
+              <button class="button button-block button-positive" ng-click="updateProfile()">
+                Update User
+              </button>
+            </div>
+          </div>
+        </ion-content>
+      </ion-view>
+    </ion-tab>
+    <ion-tab title="Notifications" icon-on="ion-chatboxes" icon-off="ion-chatboxes">
+      <ion-view>
+        <ion-content padding="true">
+          <div class="list">
+            <div class="item item-divider">
+              Email
+            </div>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">Email</span>
+              <input type="text" placeholder="name@email.com" ng-model="data.user.email">
+            </label>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">Send emails when tables are found</span>
+              <div>
+                <label class="toggle toggle-balanced">
+                 <input type="checkbox" ng-model="data.user.sendEmail">
+                 <div class="track">
+                   <div class="handle"></div>
+                 </div>
+                </label>
+              </div>
+            </label>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">How Often To Repeat Emails</span>
+              <div class="range range-positive">
+                <input type="range" name="sendEmail" min="30" max="1440" step="30" ng-model="data.frequency.email">
+              </div>
+              <h2>{{data.frequency.emailDisplay}} hours</h2>
+            </label>
+            <div class="item item-divider">
+              Text Messaging
+            </div>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">Mobile Phone Number</span>
+              <input  type="tel" placeholder="(555) 555-1234" ng-model="data.user.phone">
+            </label>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">Send texts when tables are found</span>
+              <div>
+                <label class="toggle toggle-balanced">
+                 <input type="checkbox" ng-model="data.user.sendTxt">
+                 <div class="track">
+                   <div class="handle"></div>
+                 </div>
+                </label>
+              </div>
+            </label>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">How Often To Repeat Text Message</span>
+              <div class="range range-positive">
+                <input type="range" name="sendTxt" min="30" max="1440" step="30" ng-model="data.frequency.text">
+              </div>
+              <h2>{{data.frequency.textDisplay}} hours</h2>
+            </label>
+            <div class="item item-divider">
+              Device Notifications
+            </div>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">Mute Notifications</span>
+              <div>
+                <label class="toggle toggle-balanced">
+                 <input type="checkbox">
+                 <div class="track">
+                   <div class="handle"></div>
+                 </div>
+                </label>
+              </div>
+            </label>
+            <label class="item item-input item-stacked-label">
+              <span class="input-label">How Often To Alert You</span>
+              <div class="range range-positive">
+                <input type="range" name="deviceInt" min="30" max="1440" step="30" ng-model="data.frequency.notificationInt">
+              </div>
+              <h2>{{data.frequency.notificationDisplay}} hours</h2>
+            </label>
+          </div>
+          <div class="row">
+            <div class="col">
+              <button class="button button-block button-positive" ng-click="updateNotifications()">
+                Update Notifications
+              </button>
+            </div>
+          </div>
+        </ion-content>
+      </ion-view>
+    </ion-tab>
+  </ion-tabs>
+</ion-view>

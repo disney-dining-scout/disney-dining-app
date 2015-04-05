@@ -1,0 +1,42 @@
+<ion-view view-title="Searches">
+  <ion-content>
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefresh()">
+    </ion-refresher>
+    <ion-list can-swipe="true">
+      <ion-item ng-repeat="search in searches" href="#/app/searches/{{search.id}}" class="item-icon-left" ng-click="searchClick(search)">
+        <i class="icon ion-checkmark-circled balanced" ng-if="search.logs.foundSeats == 'true' && search.past === false"></i>
+        <i class="icon ion-close-circled assertive" ng-if="search.logs.foundSeats == 'false' && search.past === false"></i>
+        <i class="icon ion-alert-circled energized" ng-if="search.past"></i>
+        <div class="row">
+          <div class="col">
+            <h2>{{search.name}}</h2>
+            <p>{{search.date | amDateFormat:'dddd, MMMM Do YYYY'}}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col col-33">
+            <p>{{search.date | amDateFormat:'h:mm A'}}</p>
+            <p>{{search.partySize}} people</p>
+          </div>
+          <div class="col col-67">
+            <p ng-if="search.logs.foundSeats == 'true'">Table(s) available</p>
+            <p ng-if="search.logs.foundSeats == 'false'">No table(s) available</p>
+            <p am-time-ago="search.logs.dateSearched"></p>
+
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <span class="calm" ng-if="search.past === false" ng-repeat="time in search.logs.times">{{time}}{{$last ? '' : ', '}}</span>
+          </div>
+        </div>
+        <ion-option-button class="button-assertive icon ion-trash-a" ng-click="deleteSearch(search)"></ion-option-button>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+  <button class="button button-float" ng-click="addSearch()">
+    <i class="icon ion-plus"></i>
+  </button>
+</ion-view>
