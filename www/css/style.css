@@ -59,3 +59,13 @@
 .item-options {
  width: 75px; 
 }
+
+.iti-flag {background-image: url("../img/flags.png");}
+
+.intl-tel-input {
+  display: block;
+}
+
+.iti-flag .arrow {
+  display: none;
+}

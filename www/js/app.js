@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  angular.module('dining', ['ionic', 'dining.controllers', 'ngCordova', 'dining.services', 'angular-jwt', 'ionic.utils', 'angularMoment', 'dining.push', 'ion-autocomplete'])
+  angular.module('dining', ['ionic', 'dining.controllers', 'ngCordova', 'dining.services', 'angular-jwt', 'ionic.utils', 'angular-lodash', 'angularMoment', 'dining.push', 'ion-autocomplete', 'internationalPhoneNumber'])
   .constant('angularMomentConfig', {
       timezone: 'America/New_York' 
   })
@@ -8,7 +8,7 @@
     token: window.localStorage.getItem("token"),
     apiUrl: "https://app.disneydining.io"
   })
-  .run(function($ionicPlatform, $location, $rootScope, $state, Token, DB, $cordovaPush, $cordovaSplashscreen, $cordovaNetwork, $cordovaAppVersion, User, Push, Preferences, appData) {
+  .run(function($ionicPlatform, $location, $rootScope, $state, Token, DB, $cordovaPush, $cordovaSplashscreen, $cordovaNetwork, $cordovaAppVersion, User, Push, Preferences, appData, jwtHelper) {
     //apiUrl = "http://128.194.89.128:3001";
     //appData.apiUrl = "http://mvoss-laptop:3001";
     appData.db = DB;
@@ -101,7 +101,7 @@
         appData.db.init().then(
           function(results) {
             appData.pushService = Push;
-            if (appData.token) {
+            if (appData.token && !jwtHelper.isTokenExpired(appData.token)) {
               appData.pushService.register();
               User.refresh().then(
                 function(user) {
@@ -165,6 +165,11 @@
         'menuContent': {
           templateUrl: "templates/search.html",
           controller: 'AddSearchCtrl'
+        }
+      },
+      resolve: {
+        user: function(User) {
+          return User.get();
         }
       }
     })

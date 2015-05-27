@@ -599,8 +599,10 @@
                 Logs.get(search.uid).then(
                   function(logs){
                     var searchTime = moment.utc(search.date, "YYYY-MM-DDTHH:mm:ssZ"),
-                          now = moment.utc();
+                        now = moment.utc(),
+                        limit = moment.utc().add(180, "days");
                     search.past = searchTime.isBefore(now);
+                    search.limit = searchTime.isAfter(limit);
                     search.logs = logs;
                     return deferred.resolve(search);
                   },
@@ -634,8 +636,10 @@
               Logs.get(search.uid).then(
                 function(logs){
                   var searchTime = moment.utc(search.date, "YYYY-MM-DDTHH:mm:ssZ"),
-                          now = moment.utc();
+                          now = moment.utc(),
+                          limit = moment.utc().add(180, "days");
                   search.past = searchTime.isBefore(now);
+                  search.limit = searchTime.isAfter(limit);
                   search.logs = logs;
                   return deferred.resolve(search);
                 },
@@ -662,7 +666,7 @@
               "SELECT userSearches.*, restaurants.name " +
               "FROM userSearches, restaurants " +
               "WHERE userSearches.restaurant = restaurants.id "+
-              "ORDER BY date DESC;";
+              "ORDER BY (CASE WHEN date >= DATETIME('now') THEN 1 ELSE 0 END) DESC, date ASC;";
         appData.db.query(query).then(
           function(result){
             var searches = appData.db.fetchAll(result),
@@ -670,8 +674,10 @@
                   Logs.get(search.uid).then(
                     function(logs){
                       var searchTime = moment.utc(search.date, "YYYY-MM-DDTHH:mm:ssZ"),
-                          now = moment.utc();
+                          now = moment.utc(),
+                          limit = moment.utc().add(180, "days");
                       search.past = searchTime.isBefore(now);
+                      search.limit = searchTime.isAfter(limit);
                       search.logs = logs;
                       callback();
                     },
@@ -803,6 +809,8 @@
             process = function(obj, result, pCallBack) {
               var _search = angular.copy(obj);
               delete _search.logs;
+              delete _search.past;
+              delete _search.limit;
               var restaurant = angular.copy(_search.restaurant);
               if (typeof restaurant === "object") {
                 _search.restaurant = restaurant.id;
@@ -879,6 +887,8 @@
                     function(ret) {
                       var _ret = angular.copy(ret);
                       delete _ret.logs;
+                      delete _ret.$promise;
+                      delete _ret.$resolved;
                       restaurant = angular.copy(_ret.restaurant);
                       if (typeof restaurant === "object") {
                         _ret.restaurant = restaurant.id;
@@ -1097,9 +1107,16 @@
     function($resource, $q, appData, $rootScope) {
       var self = this;
 
-      self.get = function(id) {
-        var deferred = $q.defer();
-        appData.db.query("SELECT * FROM restaurants WHERE id = ?", [id]).then(
+      self.get = function(id, deleted) {
+        deleted = deleted || false;
+        var deferred = $q.defer(),
+            sql ="";
+        if (deleted) {
+          sql = "SELECT * FROM restaurants WHERE id = ?";
+        } else {
+          sql = "SELECT * FROM restaurants WHERE id = ? AND deletedAt IS NULL";
+        }
+        appData.db.query(sql, [id]).then(
           function(result){
             return deferred.resolve(appData.db.fetchAll(result));
           },
@@ -1113,7 +1130,7 @@
 
       self.getAll = function() {
         var deferred = $q.defer();
-        appData.db.query("SELECT * FROM restaurants ORDER BY name ASC").then(
+        appData.db.query("SELECT * FROM restaurants WHERE deletedAt IS NULL ORDER BY name ASC").then(
           function(result){
             return deferred.resolve(appData.db.fetchAll(result));
           },
@@ -1127,7 +1144,7 @@
 
       self.find = function(name) {
         var deferred = $q.defer();
-        appData.db.query("SELECT * FROM restaurants WHERE name LIKE ?", ["%"+name+"%"]).then(
+        appData.db.query("SELECT * FROM restaurants WHERE name LIKE ? AND deletedAt IS NULL", ["%"+name+"%"]).then(
           function(result){
             return deferred.resolve(appData.db.fetchAll(result));
           },
@@ -1201,7 +1218,7 @@
 
       self.set = function(restaurant) {
         var deferred = $q.defer();
-        self.get(restaurant.id).then(function(result) {
+        self.get(restaurant.id, true).then(function(result) {
           if (result.length > 0) {
             appData.db.update("restaurants", "id = '" + restaurant.id + "'", restaurant).then(
               function(data) {
@@ -1481,58 +1498,7 @@
                 };
             $rootScope.$emit('push:search-update', notification.payload.extra.uid);
             if (notification.payload.extra.foundSeats) {
-              var now = moment.utc(),
-                  search = null, 
-                  date;
-              appData.pref.get("lastNotification").then(
-                function(result) {
-                  result = JSON.parse(result);
-                  search = $rootScope.findWhere(result, { 'uid': notification.payload.extra.uid });
-                  if (search) {
-                    date = moment.tz(search.date, "UTC");
-                  } else {
-                    date = moment.tz("1970-01-01T00:00:00+00:00", "UTC");
-                  }
-                  var diff = Math.abs(now.diff(date, 'minutes'));
-                  if (diff >= 30) {
-                    var obj = {
-                          "uid": notification.payload.extra.uid,
-                          "date": now.format("YYYY-MM-DDTHH:mm:ssZ")
-                        };
-                    if (search) {
-                      result = $rootScope.reject(result, { 'uid': notification.payload.extra.uid });
-                      result.push(obj);
-                    } else {
-                      result.push(obj);
-                    }
-                    localNotification(notification.payload.extra);
-                    appData.pref.set("lastNotification", JSON.stringify(result)).then(
-                      function(result) {
-                        //console.log(result);
-                      },
-                      function(error) {
-                        console.error(error);
-                      }
-                    );
-                  }
-                },
-                function(error) {
-                  console.error(error);
-                  localNotification(notification.payload.extra);
-                  var obj = {
-                        "uid": notification.payload.extra.uid,
-                        "date": now.format("YYYY-MM-DDTHH:mm:ssZ")
-                      };
-                  appData.pref.set("lastNotification", JSON.stringify([obj])).then(
-                    function(result) {
-                      //console.log(result);
-                    },
-                    function(error) {
-                      console.error(error);
-                    }
-                  );
-                }
-              );
+              localNotification(notification.payload.extra);
             }
           } else if (notification.payload.type === "search-edit") {
             $rootScope.$emit('push:search-edit', notification.payload.extra.id);
@@ -1542,6 +1508,8 @@
             $rootScope.$emit('push:user-update', notification.payload.extra.id);
           } else if (notification.payload.type === "search-delete") {
             $rootScope.$emit('push:search-delete', notification.payload.extra);
+          } else if (notification.payload.type === "restaurant-update") {
+            $rootScope.$emit('push:restaurant-update', notification.payload.extra);
           }
         } else if (notification.event === "error") {
           var test0 = notification.event;

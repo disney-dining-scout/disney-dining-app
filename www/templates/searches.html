@@ -7,7 +7,8 @@
     <ion-list can-swipe="true">
       <ion-item ng-repeat="search in searches" href="#/app/searches/{{search.id}}" class="item-icon-left" ng-click="searchClick(search)">
         <i class="icon ion-checkmark-circled balanced" ng-if="search.logs.foundSeats == 'true' && search.past === false"></i>
-        <i class="icon ion-close-circled assertive" ng-if="search.logs.foundSeats == 'false' && search.past === false"></i>
+        <i class="icon ion-close-circled assertive" ng-if="search.logs.foundSeats == 'false' && search.past === false && search.limit === false"></i>
+        <i class="icon ion-clock assertive" ng-if="search.limit"></i>
         <i class="icon ion-alert-circled energized" ng-if="search.past"></i>
         <div class="row">
           <div class="col">
@@ -23,6 +24,7 @@
           <div class="col col-67">
             <p ng-if="search.logs.foundSeats == 'true'">Table(s) available</p>
             <p ng-if="search.logs.foundSeats == 'false'">No table(s) available</p>
+            <p ng-if="search.limit">Outside 180 day limit</p>
             <p am-time-ago="search.logs.dateSearched"></p>
 
           </div>

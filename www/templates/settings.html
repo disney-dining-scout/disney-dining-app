@@ -64,7 +64,7 @@
             </div>
             <label class="item item-input item-stacked-label">
               <span class="input-label">Mobile Phone Number</span>
-              <input  type="tel" placeholder="(555) 555-1234" ng-model="data.user.phone">
+              <input type="tel" international-phone-number skip-util-script-download preferred-countries="us, ca, uk" ng-model="data.user.phone">
             </label>
             <label class="item item-input item-stacked-label">
               <span class="input-label">Send texts when tables are found</span>
@@ -84,6 +84,7 @@
               </div>
               <h2>{{data.frequency.textDisplay}} hours</h2>
             </label>
+            <!--
             <div class="item item-divider">
               Device Notifications
             </div>
@@ -105,6 +106,7 @@
               </div>
               <h2>{{data.frequency.notificationDisplay}} hours</h2>
             </label>
+            -->
           </div>
           <div class="row">
             <div class="col">

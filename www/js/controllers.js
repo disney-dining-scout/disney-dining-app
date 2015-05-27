@@ -4,7 +4,7 @@
   
   angular.module('dining.controllers', ['dining.services', 'ui.router', 'ionic', 'angular-md5', 'angularNumberPicker', 'toastr'])
 
-  .controller('AppCtrl', function($scope, $cordovaSQLite, User, md5, $state, $rootScope, appData) {
+  .controller('AppCtrl', function($scope, $cordovaSQLite, User, Restaurants, md5, $state, $rootScope, appData) {
     var thisScope = $scope,
         getUser = function() {
           User.get().then(
@@ -63,6 +63,20 @@
         );
       }
     );
+
+    $rootScope.$on("push:restaurant-update",
+      function (event, data) {
+        Restaurants.refresh().then(
+          function(success) {
+            console.log("Restaurants updated!");
+          },
+          function(error) {
+            console.error(error);
+          }
+        );
+      }
+    );
+
 
     $rootScope.$on("user-update",
       function (event, data) {
@@ -294,6 +308,8 @@
                     $rootScope.$emit('push:user-update', update.id);
                   } else if (update.type === "search-delete") {
                     $rootScope.$emit('push:search-delete', update.id);
+                  } else if (update.type === "restaurant-update") {
+                    $rootScope.$emit('push:restaurant-update');
                   }
                   callback(null);
                 },
@@ -327,8 +343,7 @@
     }
   )
 
-  .controller('AddSearchCtrl', function($scope, $state, $rootScope, $cordovaDatePicker, $q, Restaurants, Searches, Toast, appData) {
-
+  .controller('AddSearchCtrl', function($scope, $state, $rootScope, $cordovaDatePicker, $q, Restaurants, Searches, Toast, user, appData) {
     //$scope.$parent.addButton = false;
     $scope.data = {
       "restaurants": null,
@@ -339,7 +354,8 @@
       "seats": 2,
       "buttonName": "Add",
       "title": "Add Search",
-      "error": false
+      "error": false,
+      "user": angular.copy(user)
     };
 
     $scope.search = function(query) {
@@ -362,6 +378,7 @@
         mode: 'date', // or 'time'
         allowOldDates: false,
         allowFutureDates: true,
+        maxDate: new Date(moment.utc().add(180, "days")),
         doneButtonLabel: 'DONE',
         doneButtonColor: '#F2F3F4',
         cancelButtonLabel: 'CANCEL',
@@ -377,7 +394,7 @@
 
     $scope.onSubmit = function(item) {
       var search = {
-            user: user.id
+            user: $scope.data.user.id
           },
           offset = moment($scope.data.day, "dddd, MMMM DD YYYY").tz("America/New_York").format("Z"),
           date = moment($scope.data.day + " " + $scope.data.epochTime + " " + offset, "dddd, MMMM DD YYYY h:mm A Z").tz("UTC");
@@ -387,7 +404,7 @@
         {
           enabled: true,
           deleted: false,
-          restaurant: $scope.data.selected.id,
+          restaurant: $scope.data.selected,
           date: date.format("YYYY-MM-DD HH:mm:ssZ"),
           partySize: $scope.data.partySize,
           updatedAt: moment.utc().format("YYYY-MM-DDTHH:mm:ss.SSS")
@@ -554,6 +571,7 @@
         mode: 'date', // or 'time'
         allowOldDates: false,
         allowFutureDates: true,
+        maxDate: new Date(moment.utc().add(180, "days")),
         doneButtonLabel: 'DONE',
         doneButtonColor: '#F2F3F4',
         cancelButtonLabel: 'CANCEL',
