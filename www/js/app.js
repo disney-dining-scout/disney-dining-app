@@ -6,11 +6,12 @@
   })
   .value('appData',  {
     token: window.localStorage.getItem("token"),
-    apiUrl: "https://app.disneydining.io"
+    apiUrl: "https://app.disneydining.io",
+    platformVersion: "0.0.0"
   })
-  .run(function($ionicPlatform, $location, $rootScope, $state, Token, DB, $cordovaPush, $cordovaSplashscreen, $cordovaNetwork, $cordovaAppVersion, User, Push, Preferences, appData, jwtHelper) {
-    //apiUrl = "http://128.194.89.128:3001";
-    //appData.apiUrl = "http://mvoss-laptop:3001";
+  .run(function($ionicPlatform, $location, $rootScope, $state, Token, DB, $cordovaPush, $cordovaSplashscreen, $cordovaNetwork, $cordovaAppVersion, User, Push, Preferences, Restaurants, appData, jwtHelper) {
+    //appData.apiUrl = "http://128.194.89.128:3001";
+    //appData.apiUrl = "http://192.168.1.90:3001";
     appData.db = DB;
     appData.network = true;
     appData.user = null;
@@ -21,6 +22,7 @@
     appData.appVersion = "0.0.0";
     if (ionic.Platform.isAndroid() || ionic.Platform.isIOS()) {
       $ionicPlatform.ready(function() {
+        appData.platformVersion = ionic.Platform.version();
         if (ionic.Platform.isAndroid() || ionic.Platform.isIOS()) { 
           $cordovaSplashscreen.show();
         }
@@ -103,10 +105,35 @@
             appData.pushService = Push;
             if (appData.token && !jwtHelper.isTokenExpired(appData.token)) {
               appData.pushService.register();
-              User.refresh().then(
-                function(user) {
+              async.parallel(
+                [
+                  function(callback) {
+                    User.refresh().then(
+                      function(user) {
+                        appData.user = user;
+                        callback(null);
+                      }
+                    );
+                  },
+                  function(callback) {
+                    Restaurants.refresh().then(
+                      function(success) {
+                        console.log("Restaurants updated!");
+                        callback(null);
+                      },
+                      function(error) {
+                        console.error(error);
+                      }
+                    );
+                  }
+                ],
+                function(error) {
                   $rootScope.$emit('db:ready');
-                  $state.transitionTo('app.searches');
+                  $state.go('app.searches').then(
+                    function() {
+                      $rootScope.$emit('searches-refresh');
+                    }
+                  );
                 }
               );
             } else {
@@ -124,10 +151,35 @@
           appData.pushService = Push;
           if (appData.token) {
             appData.pushService.register();
-            User.refresh().then(
-              function(user) {
+            async.parallel(
+              [
+                function(callback) {
+                  User.refresh().then(
+                    function(user) {
+                      appData.user = user;
+                      callback(null);
+                    }
+                  );
+                },
+                function(callback) {
+                  Restaurants.refresh().then(
+                    function(success) {
+                      console.log("Restaurants updated!");
+                      callback(null);
+                    },
+                    function(error) {
+                      console.error(error);
+                    }
+                  );
+                }
+              ],
+              function(error) {
                 $rootScope.$emit('db:ready');
-                $state.transitionTo('app.searches');
+                $state.go('app.searches').then(
+                  function() {
+                    $rootScope.$emit('searches-refresh');
+                  }
+                );
               }
             );
           } else {
@@ -209,6 +261,24 @@
                   return deferred.resolve(value);
                 }
               );
+            }
+          );
+
+          return deferred.promise;
+        },
+        secondary: function($stateParams, Searches, Restaurants, $q) {
+          var deferred = $q.defer();
+          Searches.get($stateParams.id).then(
+            function(search) {
+              if (search.secondary) {
+                Restaurants.get(search.secondary).then(
+                  function(value) {
+                    return deferred.resolve(value);
+                  }
+                );
+              } else {
+                return deferred.resolve(null);
+              }
             }
           );
 

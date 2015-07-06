@@ -13,6 +13,7 @@
         <div class="row">
           <div class="col">
             <h2>{{search.name}}</h2>
+            <h4 ng-if="search.secondary">{{search.secondaryName}}</h4>
             <p>{{search.date | amDateFormat:'dddd, MMMM Do YYYY'}}</p>
           </div>
         </div>
@@ -31,14 +32,18 @@
         </div>
         <div class="row">
           <div class="col">
-            <span class="calm" ng-if="search.past === false" ng-repeat="time in search.logs.times">{{time}}{{$last ? '' : ', '}}</span>
+            <span class="calm" ng-if="search.past === false" ng-repeat="time in search.logs.timeUrls">
+              <a ng-if="time.isUrl" ng-click="data.openBrowser(time)" href="#">{{time.time}}</a>
+              <span ng-if="!time.isUrl">{{time.time}}</span>
+              {{$last ? '' : ', '}}
+            </span>
           </div>
         </div>
         <ion-option-button class="button-assertive icon ion-trash-a" ng-click="deleteSearch(search)"></ion-option-button>
       </ion-item>
     </ion-list>
   </ion-content>
-  <button class="button button-float" ng-click="addSearch()">
+  <button class="button button-float" ng-click="addSearch()" ng-disabled="data.addDisabled">
     <i class="icon ion-plus"></i>
   </button>
 </ion-view>

@@ -10,7 +10,7 @@
           User.get().then(
             function(data) {
               if (data) {
-                var user = data;
+                appData.user = data;
                 $scope.user = data;
                 $scope.user.md5 = md5.createHash($scope.user.firstName || '');
                 var identicon = document.getElementById("identicon");
@@ -178,8 +178,9 @@
   })
 
   .controller('SearchlistsCtrl',
-    function($scope, $rootScope, $state, $cordovaSplashscreen, Token, Searches, searches, appData) {
+    function($scope, $rootScope, $state, $cordovaSplashscreen, $cordovaInAppBrowser, Token, Searches, searches, appData) {
       var getSearches = function() {
+            console.log("Refreshing searches...");
             Searches.getAll().then(
               function(searches) {
                 //console.log(searches);
@@ -200,6 +201,15 @@
               },
               function(error) {
                 //if (error) console.log(error);
+              }
+            );
+          },
+          refreshSearches = function() {
+            Searches.refresh().then(
+              function(searches) {
+                //$scope.items = newItems;
+                $scope.$broadcast('scroll.refreshComplete');
+                getSearches();
               }
             );
           },
@@ -226,6 +236,28 @@
               }
             );
           };
+      if (appData.user) {
+        $scope.data.addDisabled = (appData.user.availableSearches > 0) ? false : true;
+      } else {
+        $scope.data.addDisabled = true;
+      }
+      $scope.data.openBrowser = function(time) {
+        var options = {
+          location: 'yes',
+          clearcache: 'yes',
+          toolbar: 'no'
+        };
+        $cordovaInAppBrowser.open("https://disneyworld.disney.go.com/dining-reservation/book-dining-event/?offerId[]="+time.url, '_system', options)
+        .then(function(event) {
+          // success
+        })
+        .catch(function(event) {
+          // error
+        });
+
+
+    $cordovaInAppBrowser.close();
+      };
 
       $rootScope.$on("push:search-update", function (event, data) {
         Searches.getByUid(data).then(
@@ -262,14 +294,12 @@
         refreshSearch(data.id);
       });
 
+      $rootScope.$on("searches-refresh", function (event, data) {
+        refreshSearches();
+      });
+
       $scope.doRefresh = function() {
-        Searches.refresh().then(
-          function(searches) {
-            //$scope.items = newItems;
-            $scope.$broadcast('scroll.refreshComplete');
-            getSearches();
-          }
-        );
+        refreshSearches();
       };
 
       $scope.deleteSearch = function(search) {
@@ -351,6 +381,7 @@
       "epochTime": moment.utc().add(1, "day").tz("America/New_York").format("h:mm A"),
       "day": moment.utc().add(1, "day").tz("America/New_York").format("dddd, MMMM DD YYYY"),
       "selected": null,
+      "secondary": null,
       "seats": 2,
       "buttonName": "Add",
       "title": "Add Search",
@@ -404,7 +435,8 @@
         {
           enabled: true,
           deleted: false,
-          restaurant: $scope.data.selected,
+          restaurant: $scope.data.selected.id,
+          secondary: ($scope.data.secondary) ? $scope.data.secondary.id : null,
           date: date.format("YYYY-MM-DD HH:mm:ssZ"),
           partySize: $scope.data.partySize,
           updatedAt: moment.utc().format("YYYY-MM-DDTHH:mm:ss.SSS")
@@ -539,16 +571,21 @@
     };
   })
 
-  .controller('EditSearchCtrl', function($scope, $state, $q, $rootScope, $cordovaDatePicker, User, Toast, search, Restaurants, Searches, restaurant, appData) {
+  .controller('EditSearchCtrl', function($scope, $state, $q, $rootScope, $cordovaDatePicker, User, Toast, search, Restaurants, Searches, restaurant, secondary, appData) {
     $scope.data = {
       "restaurants": null,
       "search": restaurant[0].name,
       "epochTime": moment.utc(search.date).tz("America/New_York").format("h:mm A"),
       "day": moment.utc(search.date).tz("America/New_York").format("dddd, MMMM DD YYYY"),
       "selected": restaurant[0],
+      "secondary": (secondary) ? secondary[0] : secondary,
+      "selectedSearch": search,
       "partySize": search.partySize,
       "buttonName": "Update",
-      "title": "Update Search"
+      "title": "Update Search",
+      "clickedSecondary": function(callback) {
+        $scope.data.secondary = callback.item;
+      }
     };
 
     $scope.search = function(query) {
@@ -563,6 +600,19 @@
         }
       );
       return deferred.promise;
+    };
+
+    $scope.clickedMethod = function(callback) {
+      $scope.data.selected = callback.item;
+      if (callback.item.secondary) {
+        $scope.data.secondary = {
+          id: null,
+          name: null,
+          secondary: null
+        };
+      } else {
+        $scope.data.secondary = null;
+      }
     };
 
     $scope.showDatePicker = function($event) {
@@ -596,6 +646,7 @@
           enabled: JSON.parse(search.enabled),
           deleted: JSON.parse(search.deleted),
           restaurant: $scope.data.selected.id,
+          secondary: ($scope.data.secondary) ? $scope.data.secondary.id : null,
           date: date.format("YYYY-MM-DD HH:mm:ssZ"),
           partySize: $scope.data.partySize,
           updatedAt: moment.utc().format("YYYY-MM-DDTHH:mm:ss.SSS")

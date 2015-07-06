@@ -61,7 +61,7 @@
                                           //console.log('Table ' + table.name + ' prepopulated: ', result);
                                           cb();
                                         }, function(reason) {
-                                          //console.log('Failed: ' + reason);
+                                          console.log('Failed: ' + reason);
                                           cb(reason);
                                         }
                                       );
@@ -86,12 +86,14 @@
                         cback();
                       },
                       function(error) {
+                        console.log(error);
                         populate();
                       }
                     );
                   },
                   function(error) {
                     if (error) {
+                      console.log(error);
                       deferred.reject(error);
                     } else {
                       deferred.resolve({success: true});
@@ -99,7 +101,120 @@
                   }
                 );
               } else {
-                deferred.resolve({success: true});
+                async.waterfall(
+                  [
+                    function(callback) {
+                      var updateSchema = function(version) {
+                        version = parseInt(version, 10);
+                        var startVersion = version;
+                        if (version === DB_CONFIG.currentVersion) {
+                          console.log("Schema is up to date!");
+                          callback(null, {});
+                        } else {
+                          async.whilst(
+                            function() { return (version + 1) <= DB_CONFIG.currentVersion; },
+                            function(cback) {
+                              console.log("Running schema update!");
+                              async.eachSeries(
+                                DB_CONFIG.schema[version].queries,
+                                function(query, cb) {
+                                  self.query(query).then(
+                                    function(result) {
+                                      //console.log('Table ' + table.name + ' prepopulated: ', result);
+                                      cb();
+                                    }, function(reason) {
+                                      console.log(reason);
+                                      //console.log('Failed: ' + reason);
+                                      cb(reason);
+                                    }
+                                  );
+                                },
+                                function(error) {
+                                  if (error) { console.log('Failed: ', error); }
+                                  version++;
+                                  cback(error);
+                                }
+                              );
+                            },
+                            function(err) {
+                              if (err) {
+                                console.log('Error: ', err);
+                                if (startVersion === 0) {
+                                  self.insert("settings", {value: DB_CONFIG.currentVersion, key: 'schemaVersion'}).then(
+                                    function(data) {
+                                      console.log("INSERT INTO settings");
+                                      callback(null, {});
+                                    },
+                                    function(error) {
+                                      console.log("Error:", error);
+                                      callback(null, {});
+                                    }
+                                  );
+                                } else {
+                                  self.update("settings", "key = 'schemaVersion'", {value: DB_CONFIG.currentVersion}).then(
+                                    function(data) {
+                                      console.log("UPDATE settings SET value = '" + DB_CONFIG.currentVersion + "' WHERE key = 'schemaVersion'");
+                                      callback(null, {});
+                                    },
+                                    function(error) {
+                                      console.log("Error:", error);
+                                      callback(null, {});
+                                    }
+                                  );
+                                }
+                              } else {
+                                console.log("Schema up to date!");
+                                if (startVersion === 0) {
+                                  self.insert("settings", {value: DB_CONFIG.currentVersion, key: 'schemaVersion'}).then(
+                                    function(data) {
+                                      console.log("INSERT INTO settings");
+                                      callback(null, {});
+                                    },
+                                    function(error) {
+                                      console.log("Error:", error);
+                                      callback(null, {});
+                                    }
+                                  );
+                                } else {
+                                  self.update("settings", "key = 'schemaVersion'", {value: DB_CONFIG.currentVersion}).then(
+                                    function(data) {
+                                      console.log("UPDATE settings SET value = '" + DB_CONFIG.currentVersion + "' WHERE key = 'schemaVersion'");
+                                      callback(null, {});
+                                    },
+                                    function(error) {
+                                      console.log("Error:", error);
+                                      callback(null, {});
+                                    }
+                                  );
+                                }
+                              }
+                            }
+                          );
+                        }
+
+                      };
+                      self.query("SELECT * FROM settings WHERE key = 'schemaVersion' LIMIT 1").then(
+                        function(result){
+                          var version = self.fetch(result);
+                          if (version) {
+                            updateSchema(version.value);
+                          } else {
+                            console.log("No schema version yet!");
+                            updateSchema(0);
+                          }
+                        },
+                        function(error) {
+                          console.log("Error:", error);
+                          updateSchema(0);
+                        }
+                      );
+
+                    },
+                  ],
+                  function(error, result) {
+                    deferred.resolve({success: true});
+                  }
+                );
               }
             };
 
@@ -156,6 +271,7 @@
                 deferred.resolve(result);
               },
               function (error) {
+                console.log(error);
                 deferred.reject(error);
               }
             );
@@ -182,6 +298,7 @@
         self.query(query, values).then(function(result) {
           deferred.resolve(result);
         }, function(error) {
+          console.log(error);
           deferred.reject(error);
         });
 
@@ -206,6 +323,7 @@
         self.query(query, values).then(function(result) {
           deferred.resolve(result);
         }, function(error) {
+          console.log(error);
           deferred.reject(error);
         });
 
@@ -215,15 +333,16 @@
       self.fetchAll = function(result) {
           var output = [];
 
-          for (var i = 0; i < result.rows.length; i++) {
+          if (result) {
+            for (var i = 0; i < result.rows.length; i++) {
               output.push(result.rows.item(i));
+            }
           }
-
           return output;
       };
 
       self.fetch = function(result) {
-        if (result.rows.length > 0) {
+        if (result !== null && result.rows.length > 0) {
           return result.rows.item(0);
         } else {
           return null;
@@ -239,6 +358,7 @@
         self.query(query).then(function(result) {
           deferred.resolve(result);
         }, function(error) {
+          console.log(error);
           deferred.reject(error);
         });
 
@@ -283,7 +403,7 @@
     }
   )
   .factory('User',
-    function($resource, $q, $rootScope, appData) {
+    function($resource, $q, $rootScope, Searches, appData) {
       var self = this;
 
       self.get = function() {
@@ -291,7 +411,82 @@
         appData.db.query("SELECT * FROM user LIMIT 1").then(
           function(result){
             var user = appData.db.fetch(result);
-            return deferred.resolve(user);
+            if (user) {
+              async.waterfall(
+                [
+                  function(callback) {
+                    self.getCurrentSubscription().then(
+                      function(sub){
+                        user.subscription = sub;
+                        callback(null);
+                      },
+                      function(error) {
+                        callback(error);
+                      }
+                    );
+                  },
+                  function(callback) {
+                    if (user.subscription) {
+                      self.getCurrentExtraSearches(user.subscription.id).then(
+                        function(res){
+                          var extra = appData.db.fetchAll(res);
+                          user.extraSearches = extra;
+                          callback(null);
+                        },
+                        function(error) {
+                          callback(error);
+                        }
+                      );
+                    } else {
+                      user.extraSearches = null;
+                      callback(null);
+                    }
+                  },
+                  function(callback) {
+                    Searches.getAll(true).then(
+                      function(searches) {
+                        callback(null, searches);
+                      },
+                      function(error) {
+                        callback(error);
+                      }
+                    );
+                  }
+                ],
+                function(error, activeSearches) {
+                  user.totalPaidSearches = 2;
+                  user.availableSearches = 2;
+                  var number = 2,
+                      type = {
+                        "standard" : {
+                          number: 4
+                        },
+                        "plus" : {
+                          number: 8
+                        },
+                        "pro" : {
+                          number: 101001
+                        },
+                      };
+                  if (user.subscription) {
+                    if (user.subscription.unlimited) {
+                      number = 101001;
+                    } else {
+                      number = type[user.subscription.type].number;
+                      //console.log("extraSearches:", extraSearches);
+                      if (user.extraSearches) {
+                        number += parseInt(user.extraSearches.totalSearches, 10);
+                      }
+                    }
+                  }
+                  user.totalPaidSearches = number;
+                  user.availableSearches = number - activeSearches.length;
+                  return deferred.resolve(user);
+                }
+              );
+            } else {
+              return deferred.resolve(user);
+            }
           },
           function(error) {
             return deferred.reject(error);
@@ -312,7 +507,7 @@
                 function(data) {
                   self.set(data[0], false).then(
                     function(result) {
-                      return deferred.resolve(data[0]);
+                      return deferred.resolve(result);
                     },
                     function(error) {
                       if (error.status === 401) {
@@ -373,10 +568,21 @@
         remote = (remote === null) ? true : remote;
         var deferred = $q.defer();
         self.get().then(function(result) {
-          var _user = angular.copy(user);
+          var _user = angular.copy(user),
+              subscription, extraSearches;
           delete _user.payments;
           delete _user.searches;
           delete _user.sms;
+          if ("subscription" in _user) {
+            subscription = angular.copy(_user.subscription);
+            delete _user.subscription;
+            delete _user.availableSearches;
+            delete _user.totalPaidSearches;
+          }
+          if ("extraSearches" in _user) {
+            extraSearches = angular.copy(_user.extraSearches);
+            delete _user.extraSearches;
+          }
           if (result !== null && "id" in result) {
             appData.db.update("user", "id = " + _user.id, _user).then(
               function(data) {
@@ -390,7 +596,57 @@
                     }
                   );
                 } else {
-                  return deferred.resolve(user);
+                  async.waterfall(
+                    [
+                      function(callback) {
+                        if (subscription) {
+                          self.updateSubscription(subscription).then(
+                            function(result) {
+                              callback(null);
+                            },
+                            function(error) {
+                              callback(error);
+                            }
+                          );
+                        } else {
+                         callback(null);
+                        }
+                      },
+                      function(callback) {
+                        if (extraSearches) {
+                          async.each(
+                            extraSearches,
+                            function(search, cback) {
+                              self.updateExtraSearch(search).then(
+                                function(result) {
+                                  callback(null);
+                                },
+                                function(error) {
+                                  callback(error);
+                                }
+                              );
+                            },
+                            function(error) {
+                              callback(null);
+                            }
+                          );
+                        } else {
+                          callback(null);
+                        }
+                      }
+                    ],
+                    function(error, results) {
+                      self.get().then(
+                        function(result) {
+                          return deferred.resolve(result);
+                        },
+                        function(error) {
+                          return deferred.reject(error);
+                        }
+                      );
+                    }
+                  );
+
                 }
               },
               function(error) {
@@ -418,6 +674,124 @@
         return deferred.promise;
       };
 
+      self.getCurrentSubscription = function(id) {
+        id = id || null;
+        var deferred = $q.defer();
+        appData.db.query("SELECT * FROM subscriptions ORDER BY createdAT DESC LIMIT 1", []).then(
+          function(result){
+            var subscription = appData.db.fetch(result);
+            return deferred.resolve(subscription);
+          },
+          function(error) {
+            return deferred.reject(error);
+          }
+        );
+
+        return deferred.promise;
+      };
+
+      self.getSubscription = function(id) {
+        id = id || null;
+        var deferred = $q.defer();
+        appData.db.query("SELECT * FROM subscriptions WHERE id = ? LIMIT 1", [id]).then(
+          function(result){
+            return deferred.resolve(appData.db.fetch(result));
+          },
+          function(error) {
+            return deferred.reject(error);
+          }
+        );
+
+        return deferred.promise;
+      };
+
+      self.updateSubscription = function(subscription) {
+        var deferred = $q.defer();
+        self.getSubscription(subscription.id).then(
+          function(result) {
+            if (result !== null && "id" in result) {
+              appData.db.update("subscriptions", "id = " + subscription.id, subscription).then(
+                function(data) {
+                  return deferred.resolve(subscription);
+                },
+                function(error) {
+                  return deferred.reject(error);
+                }
+              );
+            } else {
+              appData.db.insert("subscriptions", subscription).then(
+                function(data) {
+                  return deferred.resolve(subscription);
+                },
+                function(error) {
+                  return deferred.reject(error);
+                }
+              );
+            }
+          }
+        );
+        return deferred.promise;
+      };
+
+      self.getCurrentExtraSearches = function(id) {
+        id = id || null;
+        var deferred = $q.defer();
+        appData.db.query("SELECT * FROM extraSearches WHERE subscription = ? ORDER BY createdAT DESC", [id]).then(
+          function(result){
+            var extraSearches = appData.db.fetch(result);
+            return deferred.resolve(extraSearches);
+          },
+          function(error) {
+            return deferred.reject(error);
+          }
+        );
+
+        return deferred.promise;
+      };
+
+      self.getExtraSearch = function(id) {
+        id = id || null;
+        var deferred = $q.defer();
+        appData.db.query("SELECT * FROM extraSearches WHERE id = ? LIMIT 1", [id]).then(
+          function(result){
+            return deferred.resolve(appData.db.fetch(result));
+          },
+          function(error) {
+            return deferred.reject(error);
+          }
+        );
+
+        return deferred.promise;
+      };
+
+      self.updateExtraSearch = function(extraSearch) {
+        var deferred = $q.defer();
+        self.getExtraSearch(extraSearch.id).then(
+          function(result) {
+            if (result !== null && "id" in result) {
+              appData.db.update("extraSearches", "id = " + extraSearch.id, extraSearch).then(
+                function(data) {
+                  return deferred.resolve(extraSearch);
+                },
+                function(error) {
+                  return deferred.reject(error);
+                }
+              );
+            } else {
+              appData.db.insert("extraSearches", extraSearches).then(
+                function(data) {
+                  return deferred.resolve(extraSearch);
+                },
+                function(error) {
+                  return deferred.reject(error);
+                }
+              );
+            }
+          }
+        );
+        return deferred.promise;
+      };
+
       return self;
     }
   )
@@ -432,11 +806,47 @@
           appData.db.query("SELECT * FROM searchLogs WHERE uid = ? ORDER BY dateSearched DESC LIMIT 1", [uid]).then(
             function(result){
               var log = angular.copy(appData.db.fetch(result)),
-                  times = (log !== null) ? JSON.parse(log.times) : null;
+                  times = (log !== null) ? JSON.parse(log.times) : null,
+                  urls = (log !== null) ? JSON.parse(log.urls) : null,
+                  finished = function() {
+                    return deferred.resolve(log);
+                  };
               if (log !== null) {
+                var i = 0;
                 log.times = times;
+                log.urls = urls;
+                log.timeUrls = [];
+                if (urls) {
+                  async.each(
+                    log.times,
+                    function(time, callback) {
+                      log.timeUrls.push({url: urls[i], time: time, isUrl: true});
+                      i++;
+                      callback(null);
+                    },
+                    function(error){
+                      //console.log(error)
+                      finished();
+                    }
+                  );
+                } else if (times) {
+                  async.each(
+                    log.times,
+                    function(time, callback) {
+                      log.timeUrls.push({url: null, time: time, isUrl: false});
+                      i++;
+                      callback(null);
+                    },
+                    function(error){
+                      //console.log(error)
+                      finished();
+                    }
+                  );
+                } else {
+                  finished();
+                }
               }
-              return deferred.resolve(log);
+              finished();
             },
             function(error) {
               return deferred.reject(error);
@@ -585,7 +995,7 @@
     }
   )
   .factory('Searches',
-    function($resource, $q, $rootScope, Logs, appData) {
+    function($resource, $q, $rootScope, Logs, Restaurants, appData) {
       var self = this;
 
       self.get = function(id) {
@@ -607,6 +1017,7 @@
                     return deferred.resolve(search);
                   },
                   function(error) {
+                    console.log(error);
                     return deferred.reject(error);
                   }
                 );
@@ -616,6 +1027,7 @@
 
             },
             function(error) {
+              console.log(error);
               return deferred.reject(error);
             }
           );
@@ -644,12 +1056,14 @@
                   return deferred.resolve(search);
                 },
                 function(error) {
+                  console.log(error);
                   return deferred.reject(error);
                 }
               );
 
             },
             function(error) {
+              console.log(error);
               return deferred.reject(error);
             }
           );
@@ -660,29 +1074,59 @@
         }
       };
 
-      self.getAll = function() {
+      self.getAll = function(active) {
         var deferred = $q.defer(),
             query = ""+
               "SELECT userSearches.*, restaurants.name " +
               "FROM userSearches, restaurants " +
-              "WHERE userSearches.restaurant = restaurants.id "+
-              "ORDER BY (CASE WHEN date >= DATETIME('now') THEN 1 ELSE 0 END) DESC, date ASC;";
+              "WHERE userSearches.restaurant = restaurants.id ";
+        if (active) {
+          query += "AND userSearches.date >= DATETIME('now') ";
+        }
+        query += "ORDER BY (CASE WHEN userSearches.date >= DATETIME('now') THEN 1 ELSE 0 END) DESC, userSearches.date ASC;";
         appData.db.query(query).then(
           function(result){
             var searches = appData.db.fetchAll(result),
                 getLog = function(search, callback) {
-                  Logs.get(search.uid).then(
-                    function(logs){
-                      var searchTime = moment.utc(search.date, "YYYY-MM-DDTHH:mm:ssZ"),
-                          now = moment.utc(),
-                          limit = moment.utc().add(180, "days");
-                      search.past = searchTime.isBefore(now);
-                      search.limit = searchTime.isAfter(limit);
-                      search.logs = logs;
-                      callback();
-                    },
+                  async.waterfall(
+                    [
+                      function(cback) {
+                        Logs.get(search.uid).then(
+                          function(logs){
+                            var searchTime = moment.utc(search.date, "YYYY-MM-DDTHH:mm:ssZ"),
+                                now = moment.utc(),
+                                limit = moment.utc().add(180, "days");
+                            search.past = searchTime.isBefore(now);
+                            search.limit = searchTime.isAfter(limit);
+                            search.logs = logs;
+                            cback();
+                          },
+                          function(error) {
+                            console.log(error);
+                            cback(error);
+                          }
+                        );
+                      },
+                      function(cback) {
+                        if (search.secondary) {
+                          Restaurants.get(search.secondary).then(
+                            function(restaurant){
+                              search.secondaryName = restaurant[0].name;
+                              cback();
+                            },
+                            function(error) {
+                              console.log(error);
+                              cback(error);
+                            }
+                          );
+                        } else {
+                         cback(null);
+                        }
+                      }
+                    ],
                     function(error) {
-                      callback(error);
+                      console.log(error);
+                      callback(null);
                     }
                   );
                 };
@@ -693,6 +1137,7 @@
             });
           },
           function(error) {
+            console.log(error);
             return deferred.reject(error);
           }
         );
@@ -733,6 +1178,7 @@
                     return deferred.resolve(searches);
                   },
                   function(error) {
+                    console.log(error);
                     return deferred.reject(error);
                   }
                 );
@@ -748,6 +1194,7 @@
               return deferred.resolve(searches);
             },
             function(error) {
+              console.log(error);
               return deferred.reject(error);
             }
           );
@@ -766,6 +1213,7 @@
                   );
         if (appData.network) {
           search.restaurantId = search.restaurant;
+          search.secondaryId = search.secondary;
           if ("id" in search) {
             res.update(
               {searchId: search.id},
@@ -774,6 +1222,7 @@
                 return deferred.resolve(data);
               },
               function(error) {
+                console.log(error);
                 if (error.status === 401) {
                   $rootScope.emit("login");
                 }
@@ -787,6 +1236,7 @@
                 return deferred.resolve(data);
               },
               function(error) {
+                console.log(error);
                 if (error.status === 401) {
                   $rootScope.emit("login");
                 }
@@ -811,9 +1261,13 @@
               delete _search.logs;
               delete _search.past;
               delete _search.limit;
-              var restaurant = angular.copy(_search.restaurant);
+              var restaurant = angular.copy(_search.restaurant),
+                  secondary = angular.copy(_search.secondary);
               if (typeof restaurant === "object") {
                 _search.restaurant = restaurant.id;
+              }
+              if (typeof secondary === "object" && secondary) {
+                _search.secondary = secondary.id;
               }
               if (result !== null && "id" in result) {
                 appData.db.update("userSearches", "id = " + _search.id, _search).then(
@@ -839,6 +1293,7 @@
                               callback(null);
                             },
                             function(error) {
+                              console.log(error);
                               callback(error);
                             }
                           );
@@ -858,6 +1313,7 @@
                                   callback(null, null);
                                 },
                                 function(error) {
+                                  console.log(error);
                                   callback(error);
                                 }
                               );
@@ -869,6 +1325,7 @@
                       }
                     ], function (error, result) {
                       if (error) {
+                        console.log(error);
                         pCallBack(null, error);
                       } else {
                         _search.logs = search.logs;
@@ -878,6 +1335,7 @@
                     });
                   },
                   function(error) {
+                    console.log(error);
                     pCallBack(null, error);
                   }
                 );
@@ -890,8 +1348,12 @@
                       delete _ret.$promise;
                       delete _ret.$resolved;
                       restaurant = angular.copy(_ret.restaurant);
+                      secondary = angular.copy(_ret.secondary);
                       if (typeof restaurant === "object") {
                         _ret.restaurant = restaurant.id;
+                      }
+                      if (typeof secondary === "object") {
+                        _search.secondary = secondary.id;
                       }
                       appData.db.insert("userSearches", _ret).then(
                         function(data) {
@@ -914,17 +1376,20 @@
                                 pCallBack(ret);
                               },
                               function(error) {
+                                console.log(error);
                                 pCallBack(null, error);
                               }
                             );
                           });
                         },
                         function(error) {
+                          console.log(error);
                           pCallBack(null, error);
                         }
                       );
                     },
                     function(error) {
+                      console.log(error);
                       pCallBack(null, error);
                     }
                   );
@@ -950,12 +1415,14 @@
                             pCallBack(obj);
                           },
                           function(error) {
+                            console.log(error);
                             pCallBack(null, error);
                           }
                         );
                       });
                     },
                     function(error) {
+                      console.log(error);
                       pCallBack(null, error);
                     }
                   );
@@ -970,6 +1437,7 @@
                 res, 
                 function(obj, err) {
                   if (err) {
+                    console.log(err);
                     return deferred.reject(err);
                   } else {
                     return deferred.resolve(obj);
@@ -984,6 +1452,7 @@
             null,
             function(obj, err) {
               if (err) {
+                console.log(err);
                 return deferred.reject(err);
               } else {
                 return deferred.resolve(obj);
@@ -1006,6 +1475,7 @@
                         return deferred.resolve(result);
                       },
                       function(error) {
+                        console.log(error);
                         return deferred.reject(error);
                       }
                     );
@@ -1014,6 +1484,7 @@
                   }
                 },
                 function(error) {
+                  console.log(error);
                   return deferred.reject(error);
                 }
               ); 
@@ -1027,6 +1498,7 @@
                     dbDelete(search);
                   },
                   function(error) {
+                    console.log(error);
                     return deferred.reject(error);
                   }
                 );
@@ -1059,6 +1531,7 @@
               return deferred.resolve(data);
             },
             function(error) {
+              console.log(error);
               return deferred.reject(error);
             }
           );
@@ -1094,6 +1567,7 @@
             });
           },
           function(error) {
+            console.log(error);
             return deferred.reject(error);
           }
         );
@@ -1121,6 +1595,7 @@
             return deferred.resolve(appData.db.fetchAll(result));
           },
           function(error) {
+            console.log(error);
             return deferred.reject(error);
           }
         );
@@ -1135,6 +1610,7 @@
             return deferred.resolve(appData.db.fetchAll(result));
           },
           function(error) {
+            console.log(error);
             return deferred.reject(error);
           }
         );
@@ -1149,6 +1625,7 @@
             return deferred.resolve(appData.db.fetchAll(result));
           },
           function(error) {
+            console.log(error);
             return deferred.reject(error);
           }
         );
@@ -1163,6 +1640,7 @@
             return deferred.resolve(appData.db.fetch(result));
           },
           function(error) {
+            console.log(error);
             return deferred.reject(error);
           }
         );
@@ -1225,6 +1703,7 @@
                 return deferred.resolve(result);
               },
               function(error) {
+                console.log(error);
                 return deferred.reject(error);
               }
             );
@@ -1234,6 +1713,7 @@
                 return deferred.resolve(result);
               },
               function(error) {
+                console.log(error);
                 return deferred.reject(error);
               }
             );
@@ -1482,16 +1962,23 @@
         // ** NOTE: ** You could add code for when app is in foreground or not, or coming from coldstart here too
         //             via the console fields as shown.
         //console.log("In foreground " + notification.foreground  + " Coldstart " + notification.coldstart);
+        var platformVersion = appData.platformVersion.toString().charAt(0);
         if (notification.event === "registered") {
           self.token = notification.regid;
           self.storeDeviceToken("android");
         } else if (notification.event === "message") {
           if (notification.payload.type === "search-update") {
             var localNotification = function(data) {
-                  $cordovaLocalNotification.add({
-                    id:         0,
-                    message:    data.restaurant + ": " + data.message,
-                    title:      "Scout reporting"
+                  var icon = (platformVersion === "5") ? "ic_notify.png" : "ic_notify_4.x.png";
+
+
+                  $cordovaLocalNotification.schedule({
+                    id:      (notification.payload.notId) ? notification.payload.notId : data.searchId,
+                    text:    data.restaurant + ": " + data.times.join(", "),
+                    title:   (notification.payload.title) ? notification.payload.title : "Scout Reporting",
+                    color:   (notification.payload.color) ? notification.payload.color : "#b29511",
+                    icon:    "file://img/"+icon,
+                    smallIcon: "file://img/ic_stat_notify.png"
                   }).then(function () {
                     //console.log('callback for adding background notification');
                   });

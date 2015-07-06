@@ -23,10 +23,24 @@
     "./engine/cordova-crosswalk-engine-c0.6.1",
     "https://github.com/dferrell/plugins-application-preferences.git",
     "https://github.com/apla/me.apla.cordova.app-preferences.git",
-    "de.appplant.cordova.plugin.local-notification",
     "/home/mvoss/projects/cordova/PushNotification",
     "https://github.com/an-rahulpandey/cordova-plugin-dbcopy.git",
     "https://github.com/whiteoctober/cordova-plugin-app-version.git",
-    "org.apache.cordova.console"
+    "org.apache.cordova.console",
+    "cordova-plugin-whitelist",
+    "cordova-plugin-splashscreen",
+    "cordova-plugin-crosswalk-webview",
+    "https://github.com/katzer/cordova-plugin-local-notifications.git",
+    "https://github.com/Telerik-Verified-Plugins/LocalNotification.git",
+    "https://github.com/mattvoss/LocalNotification.git",
+    "/home/mvoss/projects/cordova/PushNotification/",
+    {
+      "locator": "https://github.com/mattvoss/LocalNotification.git",
+      "id": "de.appplant.cordova.plugin.local-notification"
+    },
+    "cordova-plugin-inappbrowser"
+  ],
+  "cordovaPlatforms": [
+    "android"
   ]
 }

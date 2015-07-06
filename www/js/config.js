@@ -86,5 +86,19 @@ angular.module('dining.config', [])
          ],
          data: []
       },
+    ],
+    currentVersion: 1,
+    schema: [
+      {
+        version: 1,
+        queries: [
+          "ALTER TABLE smsgateways ADD prepend VARCHAR(255) NULL",
+          "ALTER TABLE restaurants ADD secondary integer NULL DEFAULT ('0')",
+          "ALTER TABLE userSearches ADD secondary VARCHAR(255) NULL",
+          "ALTER TABLE searchLogs ADD urls TEXT NULL",
+          "CREATE TABLE subscriptions(id integer NOT NULL PRIMARY KEY, user integer, type VARCHAR(255), unlimited integer DEFAULT ('0'), monthly integer DEFAULT ('0'), expires DATETIME, createdAt DATETIME,updatedAt DATETIME,deletedAt DATETIME)",
+          "CREATE TABLE extraSearches(id integer NOT NULL PRIMARY KEY, user integer, subscription integer, numberOfSearches integer DEFAULT ('0'), createdAt DATETIME,updatedAt DATETIME,deletedAt DATETIME)"
+        ]
+      }
     ]
 });
