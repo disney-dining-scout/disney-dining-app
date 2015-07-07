@@ -38,7 +38,9 @@
           // org.apache.cordova.statusbar required
           StatusBar.styleDefault();
         }
-        appData.network = $cordovaNetwork.isOnline();
+        if (navigator.connection) {
+          appData.network = $cordovaNetwork.isOnline();
+        }
         //console.log("Network State:", $cordovaNetwork.getNetwork());
         // listen for Online event
         $rootScope.$on('$cordovaNetwork:online', function(event, networkState){

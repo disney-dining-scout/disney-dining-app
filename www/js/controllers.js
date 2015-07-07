@@ -85,7 +85,7 @@
     );
   })
 
-  .controller('LoginCtrl', function($scope, $timeout, $state, $ionicLoading, $ionicHistory, $ionicPopup, Login, Token, User, Searches, Restaurants, Logs, appData) {
+  .controller('LoginCtrl', function($scope, $timeout, $state, $ionicLoading, $ionicHistory, $ionicPopup, $cordovaSplashscreen, Login, Token, User, Searches, Restaurants, Logs, appData) {
     // Form data for the login modal
     $scope.loginData = {};
 
@@ -175,6 +175,7 @@
       //console.log('Doing login', $scope.loginData);
       login($scope.loginData);
     };
+    $cordovaSplashscreen.hide();
   })
 
   .controller('SearchlistsCtrl',

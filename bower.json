@@ -12,7 +12,9 @@
     "angular-lodash": "https://github.com/maciekrb/angular-lodash.git#ebb3e89",
     "moment-timezone": "~0.3.0",
     "ion-autocomplete": "~0.2.2",
-    "international-phone-number": "~0.0.7"
+    "international-phone-number": "~0.0.7",
+    "ng-cordova": "~0.0.3",
+    "ngCordova": "~0.1.17-alpha"
   },
   "overrides": {
     "pickadate": {
