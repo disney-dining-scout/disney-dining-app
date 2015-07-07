@@ -778,7 +778,7 @@
                 }
               );
             } else {
-              appData.db.insert("extraSearches", extraSearches).then(
+              appData.db.insert("extraSearches", extraSearch).then(
                 function(data) {
                   return deferred.resolve(extraSearch);
                 },
@@ -2011,30 +2011,30 @@
       self.handleIOS = function(notification) {
 
         if (notification.foreground === "1") {
-          // The app was already open but we'll still show the alert and sound the tone received this way. If you didn't check
-          // for foreground here it would make a sound twice, once when received in background and upon opening it from clicking
-          // the notification when this code runs (weird).
-
-          // Play custom audio if a sound specified.
-          if (notification.sound) {
-            //var mediaSrc = $cordovaMedia.newMedia(notification.sound);
-            //mediaSrc.promise.then($cordovaMedia.play(mediaSrc.media));
-          }
-
-          if (notification.body && notification.messageFrom) {
-            //$cordovaDialogs.alert(notification.body, notification.messageFrom);
-          } else {
-            //$cordovaDialogs.alert(notification.alert, "Push Notification Received");
-          }
-
-          if (notification.badge) {
-            $cordovaPush.setBadgeNumber(notification.badge).then(
-              function (result) {
-                //console.log("Set badge success " + result)
-              }, function (err) {
-                //console.log("Set badge error " + err)
-              }
-            );
+          if (notification.payload.extra.type === "search-update") {
+            var localNotification = function(data) {
+              $cordovaLocalNotification.schedule({
+                id:      data.searchId,
+                text:    data.restaurant + ": " + data.times.join(", "),
+                title:   (notification.payload.title) ? notification.payload.title : "Scout Reporting"
+              }).then(function () {
+                //console.log('callback for adding background notification');
+              });
+            };
+            $rootScope.$emit('push:search-update', notification.payload.extra.uid);
+            if (notification.payload.extra.foundSeats) {
+              localNotification(notification.payload.extra);
+            }
+          } else if (notification.payload.extra.type === "search-edit") {
+            $rootScope.$emit('push:search-edit', notification.payload.extra.id);
+          } else if (notification.payload.extra.type === "search-add") {
+            $rootScope.$emit('push:search-add', notification.payload.extra.id);
+          } else if (notification.payload.extra.type === "user-update") {
+            $rootScope.$emit('push:user-update', notification.payload.extra.id);
+          } else if (notification.payload.extra.type === "search-delete") {
+            $rootScope.$emit('push:search-delete', notification.payload.extra);
+          } else if (notification.payload.extra.type === "restaurant-update") {
+            $rootScope.$emit('push:restaurant-update', notification.payload.extra);
           }
         } else {
           // Otherwise it was received in the background and reopened from the push notification. Badge is automatically cleared

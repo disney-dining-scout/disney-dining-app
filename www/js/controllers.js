@@ -325,36 +325,38 @@
             function(result) {
               console.log(result);
               var updates = JSON.parse(result);
-              async.each(
-                updates,
-                function(update, callback) {
-                  console.log(update);
-                  if (update.type === "search-update") {
-                    $rootScope.$emit('push:search-update', update.uid);
-                  } else if (update.type === "search-edit") {
-                    $rootScope.$emit('push:search-edit', update.id);
-                  } else if (update.type === "search-add") {
-                    $rootScope.$emit('push:search-add', update.id);
-                  } else if (update.type === "user-update") {
-                    $rootScope.$emit('push:user-update', update.id);
-                  } else if (update.type === "search-delete") {
-                    $rootScope.$emit('push:search-delete', update.id);
-                  } else if (update.type === "restaurant-update") {
-                    $rootScope.$emit('push:restaurant-update');
-                  }
-                  callback(null);
-                },
-                function(error) {
-                  appData.pref.set("updates", "[]").then(
-                    function(result) {
-                      console.log(result);
-                    },
-                    function(error) {
-                      console.error(error);
+              if (updates) {
+                async.each(
+                  updates,
+                  function(update, callback) {
+                    console.log(update);
+                    if (update.type === "search-update") {
+                      $rootScope.$emit('push:search-update', update.uid);
+                    } else if (update.type === "search-edit") {
+                      $rootScope.$emit('push:search-edit', update.id);
+                    } else if (update.type === "search-add") {
+                      $rootScope.$emit('push:search-add', update.id);
+                    } else if (update.type === "user-update") {
+                      $rootScope.$emit('push:user-update', update.id);
+                    } else if (update.type === "search-delete") {
+                      $rootScope.$emit('push:search-delete', update.id);
+                    } else if (update.type === "restaurant-update") {
+                      $rootScope.$emit('push:restaurant-update');
                     }
-                  );
-                }
-              );
+                    callback(null);
+                  },
+                  function(error) {
+                    appData.pref.set("updates", "[]").then(
+                      function(result) {
+                        console.log(result);
+                      },
+                      function(error) {
+                        console.error(error);
+                      }
+                    );
+                  }
+                );
+              }
             },
             function(error) {
               console.log(error);

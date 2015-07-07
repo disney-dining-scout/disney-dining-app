@@ -26,6 +26,11 @@
         if (ionic.Platform.isAndroid() || ionic.Platform.isIOS()) { 
           $cordovaSplashscreen.show();
         }
+
+        if(ionic.Platform.isIOS()) {
+          window.plugin.notification.local.promptForPermission();
+        }
+
         $cordovaAppVersion.getAppVersion().then(function (version) {
           appData.appVersion = version;
         });
