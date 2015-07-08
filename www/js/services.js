@@ -2023,7 +2023,8 @@
               $cordovaLocalNotification.schedule({
                 id:      data.searchId,
                 text:    data.restaurant + ": " + JSON.parse(data.times).join(", "),
-                title:   (notification.title) ? notification.title : "Scout Reporting"
+                title:   (notification.title) ? notification.title : "Scout Reporting",
+                sound:   "res://platform_default"
               }).then(function () {
                 //console.log('callback for adding background notification');
               });
