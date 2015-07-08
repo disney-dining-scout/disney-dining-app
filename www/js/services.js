@@ -2014,30 +2014,30 @@
       self.handleIOS = function(notification) {
 
         if (notification.foreground === "1") {
-          if (notification.payload.extra.type === "search-update") {
+          if (notification.type === "search-update") {
             var localNotification = function(data) {
               $cordovaLocalNotification.schedule({
                 id:      data.searchId,
-                text:    data.restaurant + ": " + data.times.join(", "),
-                title:   (notification.payload.title) ? notification.payload.title : "Scout Reporting"
+                text:    data.restaurant + ": " + JSON.parse(data.times).join(", "),
+                title:   (notification.title) ? notification.title : "Scout Reporting"
               }).then(function () {
                 //console.log('callback for adding background notification');
               });
             };
             $rootScope.$emit('push:search-update', notification.payload.extra.uid);
             if (notification.payload.extra.foundSeats) {
-              localNotification(notification.payload.extra);
+              localNotification(notification);
             }
           } else if (notification.payload.extra.type === "search-edit") {
-            $rootScope.$emit('push:search-edit', notification.payload.extra.id);
+            $rootScope.$emit('push:search-edit', notification.id);
           } else if (notification.payload.extra.type === "search-add") {
-            $rootScope.$emit('push:search-add', notification.payload.extra.id);
+            $rootScope.$emit('push:search-add', notification.id);
           } else if (notification.payload.extra.type === "user-update") {
-            $rootScope.$emit('push:user-update', notification.payload.extra.id);
+            $rootScope.$emit('push:user-update', notification.id);
           } else if (notification.payload.extra.type === "search-delete") {
-            $rootScope.$emit('push:search-delete', notification.payload.extra);
+            $rootScope.$emit('push:search-delete', notification);
           } else if (notification.payload.extra.type === "restaurant-update") {
-            $rootScope.$emit('push:restaurant-update', notification.payload.extra);
+            $rootScope.$emit('push:restaurant-update', notification);
           }
         } else {
           // Otherwise it was received in the background and reopened from the push notification. Badge is automatically cleared
