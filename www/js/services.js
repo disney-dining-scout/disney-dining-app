@@ -966,6 +966,7 @@
         var deferred = $q.defer();
         self.getById(log.id).then(function(result) {
           log.times = JSON.stringify(log.times);
+          log.urls = JSON.stringify(log.urls);
           if (result !== null && "id" in result) {
             appData.db.update("searchLogs", "id = " + log.id, log).then(
               function(data) {
