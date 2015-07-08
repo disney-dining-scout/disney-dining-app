@@ -796,7 +796,7 @@
     }
   )
   .factory('Logs',
-    function($resource, $q, $rootScope, appData) {
+    function($resource, $q, $rootScope, $ionicPlatform, appData) {
       var self = this;
 
       self.get = function(uid) {
@@ -811,6 +811,8 @@
                   finished = function() {
                     return deferred.resolve(log);
                   };
+              times = (times !== null && typeof times !== "object") ? JSON.parse(times) : null;
+              urls = (urls !== null && typeof urls !== "object") ? JSON.parse(urls) : null;
               if (log !== null) {
                 var i = 0;
                 log.times = times;
@@ -868,6 +870,8 @@
               var log = angular.copy(appData.db.fetch(result)),
                   times = (log !== null) ? JSON.parse(log.times) : null,
                   urls = (log !== null) ? JSON.parse(log.urls) : null;
+              times = (times !== null && typeof times !== "object") ? JSON.parse(times) : null;
+              urls = (urls !== null && typeof urls !== "object") ? JSON.parse(urls) : null;
               if (log !== null) {
                 log.times = times;
                 log.urls = urls;
@@ -967,8 +971,8 @@
       self.set = function(log) {
         var deferred = $q.defer();
         self.getById(log.id).then(function(result) {
-          log.times = JSON.stringify(log.times);
-          log.urls = JSON.stringify(log.urls);
+          log.times = (typeof log.times !== "string") ? JSON.stringify(log.times) : log.times;
+          log.urls = (typeof log.urls !== "string") ? JSON.stringify(log.urls) : log.urls;
           if (result !== null && "id" in result) {
             appData.db.update("searchLogs", "id = " + log.id, log).then(
               function(data) {
