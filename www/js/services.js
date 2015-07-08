@@ -866,9 +866,11 @@
           appData.db.query("SELECT * FROM searchLogs WHERE id = ? ORDER BY dateSearched DESC LIMIT 1", [id]).then(
             function(result){
               var log = angular.copy(appData.db.fetch(result)),
-                  times = (log !== null) ? JSON.parse(log.times) : null;
+                  times = (log !== null) ? JSON.parse(log.times) : null,
+                  urls = (log !== null) ? JSON.parse(log.urls) : null;
               if (log !== null) {
                 log.times = times;
+                log.urls = urls;
               }
               return deferred.resolve(log);
             },
