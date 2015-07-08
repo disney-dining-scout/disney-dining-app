@@ -811,8 +811,8 @@
                   finished = function() {
                     return deferred.resolve(log);
                   };
-              times = (times !== null && typeof times !== "object") ? JSON.parse(times) : null;
-              urls = (urls !== null && typeof urls !== "object") ? JSON.parse(urls) : null;
+              times = (times !== null && typeof times !== "object") ? JSON.parse(times) : times;
+              urls = (urls !== null && typeof urls !== "object") ? JSON.parse(urls) : urls;
               if (log !== null) {
                 var i = 0;
                 log.times = times;
@@ -870,8 +870,8 @@
               var log = angular.copy(appData.db.fetch(result)),
                   times = (log !== null) ? JSON.parse(log.times) : null,
                   urls = (log !== null) ? JSON.parse(log.urls) : null;
-              times = (times !== null && typeof times !== "object") ? JSON.parse(times) : null;
-              urls = (urls !== null && typeof urls !== "object") ? JSON.parse(urls) : null;
+              times = (times !== null && typeof times !== "object") ? JSON.parse(times) : times;
+              urls = (urls !== null && typeof urls !== "object") ? JSON.parse(urls) : urls;
               if (log !== null) {
                 log.times = times;
                 log.urls = urls;
