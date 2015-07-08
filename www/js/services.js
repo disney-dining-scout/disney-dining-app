@@ -2024,19 +2024,19 @@
                 //console.log('callback for adding background notification');
               });
             };
-            $rootScope.$emit('push:search-update', notification.payload.extra.uid);
-            if (notification.payload.extra.foundSeats) {
+            $rootScope.$emit('push:search-update', notification.uid);
+            if (notification.foundSeats) {
               localNotification(notification);
             }
-          } else if (notification.payload.extra.type === "search-edit") {
+          } else if (notification.type === "search-edit") {
             $rootScope.$emit('push:search-edit', notification.id);
-          } else if (notification.payload.extra.type === "search-add") {
+          } else if (notification.type === "search-add") {
             $rootScope.$emit('push:search-add', notification.id);
-          } else if (notification.payload.extra.type === "user-update") {
+          } else if (notification.type === "user-update") {
             $rootScope.$emit('push:user-update', notification.id);
-          } else if (notification.payload.extra.type === "search-delete") {
+          } else if (notification.type === "search-delete") {
             $rootScope.$emit('push:search-delete', notification);
-          } else if (notification.payload.extra.type === "restaurant-update") {
+          } else if (notification.type === "restaurant-update") {
             $rootScope.$emit('push:restaurant-update', notification);
           }
         } else {
