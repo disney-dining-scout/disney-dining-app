@@ -7,3 +7,4 @@ plugins/
 engine/
 www/lib/
 /disneydining (copy).db
+/npm-debug.log
