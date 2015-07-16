@@ -1,0 +1,90 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/opt/nvm/versions/node/v0.12.6/bin/node',
+1 verbose cli   '/usr/local/opt/nvm/versions/node/v0.12.6/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   '-save',
+1 verbose cli   'ng-cordova' ]
+2 info using npm@2.11.2
+3 info using node@v0.12.6
+4 verbose node symlink /usr/local/opt/nvm/versions/node/v0.12.6/bin/node
+5 verbose install initial load of /Users/dorconfrm/projects/ionic/disney-dining-app/package.json
+6 warn package.json disneydining@1.0.0 No repository field.
+7 warn package.json disneydining@1.0.0 No README data
+8 warn package.json disneydining@1.0.0 No license field.
+9 verbose installManyTop reading scoped package data from /Users/dorconfrm/projects/ionic/disney-dining-app/node_modules/ionic/package.json
+10 verbose readDependencies loading dependencies from /Users/dorconfrm/projects/ionic/disney-dining-app/package.json
+11 silly cache add args [ 'ng-cordova', null ]
+12 verbose cache add spec ng-cordova
+13 silly cache add parsed spec { raw: 'ng-cordova',
+13 silly cache add   scope: null,
+13 silly cache add   name: 'ng-cordova',
+13 silly cache add   rawSpec: '',
+13 silly cache add   spec: '*',
+13 silly cache add   type: 'range' }
+14 silly addNamed ng-cordova@*
+15 verbose addNamed "*" is a valid semver range for ng-cordova
+16 silly addNameRange { name: 'ng-cordova', range: '*', hasData: false }
+17 silly mapToRegistry name ng-cordova
+18 silly mapToRegistry using default registry
+19 silly mapToRegistry registry https://registry.npmjs.org/
+20 silly mapToRegistry uri https://registry.npmjs.org/ng-cordova
+21 verbose addNameRange registry:https://registry.npmjs.org/ng-cordova not in flight; fetching
+22 verbose request uri https://registry.npmjs.org/ng-cordova
+23 verbose request no auth needed
+24 info attempt registry request try #1 at 9:35:20 AM
+25 verbose request id 6a20ec7ecb1ba19b
+26 http request GET https://registry.npmjs.org/ng-cordova
+27 http 200 https://registry.npmjs.org/ng-cordova
+28 silly get cb [ 200,
+28 silly get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+28 silly get     etag: '"94XYU3T3IHHVODEG3GE76Y6IY"',
+28 silly get     'content-type': 'application/json',
+28 silly get     'cache-control': 'max-age=60',
+28 silly get     'content-length': '15797',
+28 silly get     'accept-ranges': 'bytes',
+28 silly get     date: 'Mon, 06 Jul 2015 14:35:20 GMT',
+28 silly get     via: '1.1 varnish',
+28 silly get     age: '0',
+28 silly get     connection: 'keep-alive',
+28 silly get     'x-served-by': 'cache-ord1726-ORD',
+28 silly get     'x-cache': 'MISS',
+28 silly get     'x-cache-hits': '0',
+28 silly get     'x-timer': 'S1436193320.915547,VS0,VE68',
+28 silly get     vary: 'Accept' } ]
+29 verbose get saving ng-cordova to /Users/dorconfrm/.npm/registry.npmjs.org/ng-cordova/.cache.json
+30 silly addNameRange number 2 { name: 'ng-cordova', range: '*', hasData: true }
+31 silly addNameRange versions [ 'ng-cordova',
+31 silly addNameRange   [ '0.1.7-alpha',
+31 silly addNameRange     '0.1.10-alpha',
+31 silly addNameRange     '0.1.11-alpha',
+31 silly addNameRange     '0.1.12-alpha',
+31 silly addNameRange     '0.1.15-alpha',
+31 silly addNameRange     '0.1.17-alpha' ] ]
+32 verbose stack Error: No compatible version found: ng-cordova@'*'
+32 verbose stack Valid install targets:
+32 verbose stack ["0.1.7-alpha","0.1.10-alpha","0.1.11-alpha","0.1.12-alpha","0.1.15-alpha","0.1.17-alpha"]
+32 verbose stack
+32 verbose stack     at installTargetsError (/usr/local/Cellar/nvm/0.24.0/versions/node/v0.12.6/lib/node_modules/npm/lib/cache/add-named.js:274:12)
+32 verbose stack     at next (/usr/local/Cellar/nvm/0.24.0/versions/node/v0.12.6/lib/node_modules/npm/lib/cache/add-named.js:253:17)
+32 verbose stack     at setData (/usr/local/Cellar/nvm/0.24.0/versions/node/v0.12.6/lib/node_modules/npm/lib/cache/add-named.js:230:5)
+32 verbose stack     at RES (/usr/local/Cellar/nvm/0.24.0/versions/node/v0.12.6/lib/node_modules/npm/node_modules/inflight/inflight.js:23:14)
+32 verbose stack     at f (/usr/local/Cellar/nvm/0.24.0/versions/node/v0.12.6/lib/node_modules/npm/node_modules/once/once.js:17:25)
+32 verbose stack     at fixName (/usr/local/Cellar/nvm/0.24.0/versions/node/v0.12.6/lib/node_modules/npm/lib/cache/add-named.js:29:5)
+32 verbose stack     at saved (/usr/local/Cellar/nvm/0.24.0/versions/node/v0.12.6/lib/node_modules/npm/lib/cache/caching-client.js:173:7)
+32 verbose stack     at FSReqWrap.oncomplete (fs.js:95:15)
+33 verbose cwd /Users/dorconfrm/projects/ionic/disney-dining-app
+34 error Darwin 13.4.0
+35 error argv "/usr/local/opt/nvm/versions/node/v0.12.6/bin/node" "/usr/local/opt/nvm/versions/node/v0.12.6/bin/npm" "install" "-save" "ng-cordova"
+36 error node v0.12.6
+37 error npm  v2.11.2
+38 error code ETARGET
+39 error notarget No compatible version found: ng-cordova@'*'
+39 error notarget Valid install targets:
+39 error notarget ["0.1.7-alpha","0.1.10-alpha","0.1.11-alpha","0.1.12-alpha","0.1.15-alpha","0.1.17-alpha"]
+39 error notarget
+39 error notarget This is most likely not a problem with npm itself.
+39 error notarget In most cases you or one of your dependencies are requesting
+39 error notarget a package version that doesn't exist.
+39 error notarget
+39 error notarget It was specified as a dependency of 'disneydining'
+40 verbose exit [ 1, true ]

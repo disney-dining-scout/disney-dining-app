@@ -580,7 +580,7 @@
       "restaurants": null,
       "search": restaurant[0].name,
       "epochTime": moment.utc(search.date).tz("America/New_York").format("h:mm A"),
-      "day": moment.utc(search.date).tz("America/New_York").format("dddd, MMMM DD YYYY"),
+      "day": moment.utc(search.date).tz("America/New_York").format("MMM DD YYYY"),
       "selected": restaurant[0],
       "secondary": (secondary) ? secondary[0] : secondary,
       "selectedSearch": search,
