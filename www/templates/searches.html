@@ -33,7 +33,7 @@
         <div class="row">
           <div class="col">
             <span class="calm" ng-if="search.past === false" ng-repeat="time in search.logs.timeUrls">
-              <a ng-if="time.isUrl" ng-click="data.openBrowser(time)" href="#">{{time.time}}</a>
+              <a ng-if="time.isUrl" ng-click="data.openBrowser(time, $index, $event)" href="#">{{time.time}}</a>
               <span ng-if="!time.isUrl">{{time.time}}</span>
               {{$last ? '' : ', '}}
             </span>

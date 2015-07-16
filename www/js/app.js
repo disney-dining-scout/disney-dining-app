@@ -119,6 +119,10 @@
                       function(user) {
                         appData.user = user;
                         callback(null);
+                      },
+                      function(error) {
+                        console.log(error);
+                        callback(error);
                       }
                     );
                   },
@@ -129,7 +133,8 @@
                         callback(null);
                       },
                       function(error) {
-                        console.error(error);
+                        console.log(error);
+                        callback(error);
                       }
                     );
                   }
@@ -148,7 +153,8 @@
             }
           },
           function(error) {
-            console.error(error);
+            console.log(error);
+            $state.transitionTo('app.login');
           }
         );
       });

@@ -1356,10 +1356,10 @@
                       delete _ret.$resolved;
                       restaurant = angular.copy(_ret.restaurant);
                       secondary = angular.copy(_ret.secondary);
-                      if (typeof restaurant === "object") {
+                      if (typeof restaurant === "object" && restaurant !== null) {
                         _ret.restaurant = restaurant.id;
                       }
-                      if (typeof secondary === "object") {
+                      if (typeof secondary === "object" && secondary !== null) {
                         _search.secondary = secondary.id;
                       }
                       appData.db.insert("userSearches", _ret).then(

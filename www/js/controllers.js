@@ -242,7 +242,8 @@
       } else {
         $scope.data.addDisabled = true;
       }
-      $scope.data.openBrowser = function(time) {
+      $scope.data.openBrowser = function(time, $index, $event) {
+        $event.stopPropagation();
         var options = {
           location: 'yes',
           clearcache: 'yes',
@@ -438,8 +439,8 @@
         {
           enabled: true,
           deleted: false,
-          restaurant: $scope.data.selected.id,
-          secondary: ($scope.data.secondary) ? $scope.data.secondary.id : null,
+          restaurant: $scope.data.selected,
+          secondary: ($scope.data.secondary) ? $scope.data.secondary : null,
           date: date.format("YYYY-MM-DD HH:mm:ssZ"),
           partySize: $scope.data.partySize,
           updatedAt: moment.utc().format("YYYY-MM-DDTHH:mm:ss.SSS")
