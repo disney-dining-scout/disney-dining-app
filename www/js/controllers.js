@@ -120,17 +120,8 @@
           User.set(user).then(
             function(result) {
               //console.log(result);
-              User.refresh().then(
-                function(user) {
-                  appData.user = user;
-                  updateUserInfo(user);
-                },
-                function(error) {
-                  console.log(error);
-                  updateUserInfo(user);
-                }
-              );
-
+              appData.user = user;
+              updateUserInfo(user);
             },
             function(error) {
               console.error(error);
