@@ -30,6 +30,11 @@
         if(ionic.Platform.isIOS()) {
           window.plugin.notification.local.promptForPermission();
         }
+        
+        document.addEventListener("resume", function() {
+          console.log("The application is resuming from the background");
+          $rootScope.$emit('searches-refresh');
+        }, false);
 
         $cordovaAppVersion.getAppVersion().then(function (version) {
           appData.appVersion = version;

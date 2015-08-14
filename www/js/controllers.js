@@ -99,8 +99,43 @@
           Login.save(login,
             function(d) {
               //console.log("data from server:", d);
-              setToken(d.token);
-              updateUser(d.user);
+              async.parallel(
+                [
+                  function(callback) {
+                    setToken(d.token);
+                    callback(null);
+                  },
+                  function(callback) {
+                    updateUser(
+                      d.user,
+                      function(error) {
+                        callback(error);
+                      }
+                    );
+                  },
+                  function(callback) {
+                    updateUserInfo(
+                      d.user,
+                      function(error) {
+                        callback(error);
+                      }
+                    );
+                  }
+                ],
+                function(error) {
+                  $state.go(
+                    "app.searches",
+                    null,
+                    {
+                      location: 'replace'
+                    }
+                  );
+
+                             
+                }
+              );
+              
+              
             },
             function(error) {
                var alertPopup = $ionicPopup.alert({
@@ -116,15 +151,24 @@
             }
           );
         },
-        updateUser = function(user) {
+        updateUser = function(user, cback) {
           User.set(user).then(
             function(result) {
-              //console.log(result);
-              appData.user = user;
-              updateUserInfo(user);
+              User.get().then(
+                function(result) {
+                  //console.log(result);
+                  appData.user = user;
+                  cback(null)
+                },
+                function(error) {
+                  console.error(error);
+                  cback(error);
+                }
+              );
             },
             function(error) {
               console.error(error);
+              cback(error);
             }
           );
         },
@@ -140,7 +184,7 @@
             }
           );
         },
-        updateUserInfo = function(user) {
+        updateUserInfo = function(user, cback) {
           async.each(user.searches, updateSearch, function(error){
             //if (error) console.log(error);
             Restaurants.refresh().then(
@@ -152,16 +196,11 @@
                 if (appData.token) {
                   appData.pushService.register();
                 }
-                $state.go(
-                  "app.searches",
-                  null,
-                  {
-                    location: 'replace'
-                  }
-                );
+                cback(null);
               },
               function(error) {
                 console.error(error);
+                cback(error);
               }
             );
 
@@ -180,7 +219,7 @@
   })
 
   .controller('SearchlistsCtrl',
-    function($scope, $rootScope, $state, $cordovaSplashscreen, $cordovaInAppBrowser, Token, Searches, searches, appData) {
+    function($scope, $rootScope, $state, $cordovaSplashscreen, $cordovaInAppBrowser, Token, Searches, User, searches, appData) {
       var getSearches = function() {
             console.log("Refreshing searches...");
             Searches.getAll().then(
@@ -238,10 +277,20 @@
               }
             );
           };
-      if (appData.user) {
+      if (appData.user && "availableSearches" in appData.user) {
         $scope.data.addDisabled = (appData.user.availableSearches > 0) ? false : true;
       } else {
-        $scope.data.addDisabled = true;
+        User.refresh().then(
+          function(user) {
+            //console.log(result);
+            appData.user = user;
+            $scope.data.addDisabled = (appData.user.availableSearches > 0) ? false : true;
+          },
+          function(error) {
+            console.error(error);
+            $scope.data.addDisabled = true;
+          }
+        );
       }
       $scope.data.openBrowser = function(time, $index, $event) {
         $event.stopPropagation();
@@ -383,8 +432,8 @@
     $scope.data = {
       "restaurants": null,
       "search": '',
-      "epochTime": moment.utc().add(1, "day").tz("America/New_York").format("h:mm A"),
-      "day": moment.utc().add(1, "day").tz("America/New_York").format("dddd, MMMM DD YYYY"),
+      "epochTime": moment.utc().add(1, "day").tz("America/New_York").toDate(),
+      "day": moment.utc().add(1, "day").tz("America/New_York").toDate(),
       "selected": null,
       "secondary": null,
       "seats": 2,
@@ -432,8 +481,10 @@
       var search = {
             user: $scope.data.user.id
           },
-          offset = moment($scope.data.day, "dddd, MMMM DD YYYY").tz("America/New_York").format("Z"),
-          date = moment($scope.data.day + " " + $scope.data.epochTime + " " + offset, "dddd, MMMM DD YYYY h:mm A Z").tz("UTC");
+          d = moment.tz(moment($scope.data.day).format("YYYY-MM-DDTHH:mm:ss"), "America/New_York"),
+          offset = d.format("Z"),
+          t = moment.tz(moment($scope.data.epochTime).format("YYYY-MM-DDTHH:mm:ss"), "America/New_York"),
+          date = moment(d.format("YYYY-MM-DD") + "T" + t.format("HH:mm:ss") + " " + offset, "YYYY-MM-DDTHH:mm:ss Z").tz("UTC");
       $scope.data.error = false;
       angular.extend(
         search,
@@ -580,8 +631,8 @@
     $scope.data = {
       "restaurants": null,
       "search": restaurant[0].name,
-      "epochTime": moment.utc(search.date).tz("America/New_York").format("h:mm A"),
-      "day": moment.utc(search.date).tz("America/New_York").format("MMM DD YYYY"),
+      "epochTime": moment.utc(search.date).tz("America/New_York").toDate(),
+      "day": moment.utc(search.date).tz("America/New_York").toDate(),
       "selected": restaurant[0],
       "secondary": (secondary) ? secondary[0] : secondary,
       "selectedSearch": search,
@@ -643,8 +694,10 @@
 
     $scope.onSubmit = function(item) {
       var _search = angular.copy(search),
-          offset = moment($scope.data.day, "dddd, MMMM DD YYYY").tz("America/New_York").format("Z"),
-          date = moment($scope.data.day + " " + $scope.data.epochTime + " "+offset, "dddd, MMMM DD YYYY h:mm A Z").tz("UTC");
+              d = moment.tz(moment($scope.data.day).format("YYYY-MM-DDTHH:mm:ss"), "America/New_York"),
+              offset = d.format("Z"),
+              t = moment.tz(moment($scope.data.epochTime).format("YYYY-MM-DDTHH:mm:ss"), "America/New_York"),
+              date = moment(d.format("YYYY-MM-DD") + "T" + t.format("HH:mm:ss") + " " + offset, "YYYY-MM-DDTHH:mm:ss Z").tz("UTC");
       angular.extend(
         _search,
         {
