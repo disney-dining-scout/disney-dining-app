@@ -631,8 +631,9 @@
     $scope.data = {
       "restaurants": null,
       "search": restaurant[0].name,
-      "epochTime": moment.utc(search.date).tz("America/New_York").toDate(),
-      "day": moment.utc(search.date).tz("America/New_York").toDate(),
+      "date": search.date,
+      "time": moment.utc(search.date).tz("America/New_York").format("h:mm A"),
+      "day": moment.utc(search.date).tz("America/New_York").format("dddd, MMMM DD YYYY"),
       "selected": restaurant[0],
       "secondary": (secondary) ? secondary[0] : secondary,
       "selectedSearch": search,
@@ -671,27 +672,45 @@
       }
     };
 
-    $scope.showDatePicker = function($event) {
+    $scope.data.showDatePicker = function($event) {
       var options = {
-        date: new Date(moment($scope.data.day, "dddd, MMMM DD YYYY")),
+        date: new Date(moment.utc($scope.data.date).tz("America/New_York").format("MM/DD/YYYY HH:mm:ss")),
+        maxDate: moment.utc().add(180, "days").format("x"),
         mode: 'date', // or 'time'
         allowOldDates: false,
         allowFutureDates: true,
-        maxDate: new Date(moment.utc().add(180, "days")),
-        doneButtonLabel: 'DONE',
-        doneButtonColor: '#F2F3F4',
-        cancelButtonLabel: 'CANCEL',
-        cancelButtonColor: '#000000'
+        androidTheme: 5
       };
 
       $cordovaDatePicker.show(options).then(
         function(date){
-          $scope.data.day = moment(date).tz("America/New_York").format("dddd, MMMM DD YYYY");
+          var day = moment(date).format("YYYY-MM-DD"),
+              time = moment.utc($scope.data.date).tz("America/New_York").format("HH:mm:ss"),
+              dateTime = moment.tz(day + " " + time, "America/New_York").utc();
+          $scope.data.day = moment.tz(day + " " + time, "America/New_York").format("dddd, MMMM DD YYYY");
+          $scope.data.date = dateTime;
         }
       );
     };
+    
+    $scope.data.showTimePicker = function($event) {
+      var options = {
+        date: new Date(moment.utc($scope.data.date).tz("America/New_York").format("MM/DD/YYYY HH:mm:ss")),
+        mode: 'time', // or 'time'
+        androidTheme: 5
+      };
 
-
+      $cordovaDatePicker.show(options).then(
+        function(date){
+          var time = moment(date).format("HH:mm:ss"),
+              day = moment.utc($scope.data.date).tz("America/New_York").format("YYYY-MM-DD"),
+              dateTime = moment.tz(day + " " + time, "America/New_York").utc();
+          $scope.data.time = moment.tz(day + " " + time, "America/New_York").format("h:mm A");
+          $scope.data.date = date;
+        }
+      );
+    };
+    
     $scope.onSubmit = function(item) {
       var _search = angular.copy(search),
               d = moment.tz(moment($scope.data.day).format("YYYY-MM-DDTHH:mm:ss"), "America/New_York"),
@@ -705,7 +724,7 @@
           deleted: JSON.parse(search.deleted),
           restaurant: $scope.data.selected.id,
           secondary: ($scope.data.secondary) ? $scope.data.secondary.id : null,
-          date: date.format("YYYY-MM-DD HH:mm:ssZ"),
+          date: $scope.data.date.format("YYYY-MM-DD HH:mm:ssZ"),
           partySize: $scope.data.partySize,
           updatedAt: moment.utc().format("YYYY-MM-DDTHH:mm:ss.SSS")
         }

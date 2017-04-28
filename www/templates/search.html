@@ -21,13 +21,13 @@
         <li class="item" ng-repeat="restaurant in data.restaurants">{{restaurant.name}}</li>
       </div>
       -->
-      <label class="item item-input item-stacked-label">
-        <span class="input-label">Date</span>
-        <input type="date" placeholder="Sunday, January 25 2015" ng-model="data.day">
+      <label class="item item-input item-stacked-label" ng-click="data.showDatePicker()">
+        <span class="input-label">Date</span> <br />
+        <label type="text" ng-model="data.day">{{data.day}}</label>
       </label>
-      <label class="item item-input item-stacked-label">
-        <span class="input-label">Time</span>
-        <input type="time" placeholder="Sunday, January 25 2015" ng-model="data.epochTime">
+      <label class="item item-input item-stacked-label" ng-click="data.showTimePicker()">
+        <span class="input-label">Time</span> <br />
+        <label type="text" ng-model="data.epochTime">{{data.time}}</label>
       </label>
       <label class="item item-input item-stacked-label">
         <span class="input-label">Number of Guests</span>
